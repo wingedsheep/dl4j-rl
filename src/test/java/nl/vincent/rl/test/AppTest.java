@@ -1,4 +1,4 @@
-package vincent.nl.vincent.pg;
+package nl.vincent.rl.test;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
