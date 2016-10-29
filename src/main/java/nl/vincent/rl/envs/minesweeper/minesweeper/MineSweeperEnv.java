@@ -26,6 +26,10 @@ public class MineSweeperEnv extends Environment {
 
 	@Override
 	public State reset() {
+		if (mineSweeperGame != null && mineSweeperGame.isVisible()) {
+			mineSweeperGame.setVisible(false); //you can't see me!
+			mineSweeperGame.dispose(); //Destroy the JFrame object
+		}
 		mineSweeperGame = new MineSweeperGame(boardSize, toughness);
 		mineSweeperGame.main(mineSweeperGame, boardSize);
 		State state = getStateFromMineSweeperGame();
