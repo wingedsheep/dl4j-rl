@@ -7,7 +7,11 @@ public class State {
 		this.state = state;
 	}
 	
-	public double[] getState() {
+	public State(State source) {
+		this.state = source.state.clone();
+	}
+	
+	public double[] asList() {
 		return state;
 	}
 }
