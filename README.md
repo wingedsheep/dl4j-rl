@@ -20,3 +20,5 @@ DQN dqn = new DQN.DQNBuilder()
 // Try to solve the gridworld using DQN (10000 epochs, max 200 steps per epoch)
 dqn.run(new GridWorld(), 10000, 200);
 ```
+
+Thanks to https://github.com/OrkoHunter/Minesweeper/tree/master/dist for the minesweeper env.
