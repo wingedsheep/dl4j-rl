@@ -25,10 +25,10 @@ public class App
     	DQN dqn = new DQN.DQNBuilder()
     			.discountFactor(0.995)
     			.explorationRateDecay(0.995)
-    			.hiddenLayers(new int[] {30, 30, 30})
+    			.hiddenLayers(new int[] {100, 100, 100})
     			.memorySize(100000)
     			.miniBatchSize(32)
-    			.learningRate(0.01)
+    			.learningRate(0.001)
     			.startingExplorationRate(1.0).build();
     	
     	dqn.run(new MineSweeperEnv(10, MineSweeperEnv.TOUGHNESS_EASY), 10000, 1000);

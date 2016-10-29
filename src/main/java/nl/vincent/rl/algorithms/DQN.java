@@ -56,6 +56,13 @@ public class DQN {
 		for (int epoch = 0; epoch < epochs; epoch ++) {
 			State state = env.reset();
 			
+			if (epoch % 1000 == 0 && epoch != 0) {
+				try {
+					qModel1.saveModel("qModel1_"+epoch+".zip");
+					qModel2.saveModel("qModel2_"+epoch+".zip");
+				} catch (Exception e) {}
+			}
+			
 			double totalReward = 0;
 			int totalSteps = 0;
 		    for (int t=0; t < steps; t++) {

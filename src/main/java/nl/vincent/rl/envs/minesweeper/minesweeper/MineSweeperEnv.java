@@ -48,8 +48,8 @@ public class MineSweeperEnv extends Environment {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			mineSweeperGame.setVisible(false);
-			mineSweeperGame = null;
+			mineSweeperGame.setVisible(false); //you can't see me!
+			mineSweeperGame.dispose(); //Destroy the JFrame object
 		}
 		return obs;
 	}

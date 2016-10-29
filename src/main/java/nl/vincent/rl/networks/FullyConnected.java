@@ -1,5 +1,7 @@
 package nl.vincent.rl.networks;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
@@ -10,6 +12,7 @@ import org.deeplearning4j.nn.conf.layers.DenseLayer;
 import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
+import org.deeplearning4j.util.ModelSerializer;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.lossfunctions.LossFunctions.LossFunction;
@@ -112,5 +115,11 @@ public class FullyConnected {
         }
 		model.fit(inputVector, outputVector);
 	}
-
+	
+	public void saveModel(String path) throws IOException {
+		//Save the model
+	    File locationToSave = new File(path);      //Where to save the network. Note: the file is in .zip format - can be opened externally
+	    boolean saveUpdater = true;                                     //Updater: i.e., the state for Momentum, RMSProp, Adagrad etc. Save this if you want to train your network more in the future
+	    ModelSerializer.writeModel(this.model, locationToSave, saveUpdater);
+	}
 }
