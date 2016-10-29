@@ -321,7 +321,12 @@ public class MineSweeperGame extends JFrame {
 		}
 		// Small penalty for clicking an already revealed state
 		int noRevealedAfter = noOfRevealed;
-		return noRevealedAfter - noRevealedBefore;
+		int discovered = noRevealedAfter - noRevealedBefore;
+		if (discovered == 0) {
+			return -1;
+		} else {
+			return discovered;
+		}
 	}
 
 	private JButton[][] buttons;  // The Grid buttons
