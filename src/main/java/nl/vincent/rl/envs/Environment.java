@@ -4,8 +4,10 @@ import nl.vincent.rl.common.Observation;
 import nl.vincent.rl.common.State;
 
 public abstract class Environment {
-	private int actions;
-	private int stateSize;
+	protected int actions;
+	protected int stateSize;
+	
+	public Environment() {}
 	
 	public Environment(int actions, int stateSize) {
 		this.actions = actions;
