@@ -10,6 +10,7 @@ import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.Updater;
 import org.deeplearning4j.nn.conf.layers.DenseLayer;
 import org.deeplearning4j.nn.conf.layers.OutputLayer;
+import org.deeplearning4j.nn.gradient.Gradient;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.util.ModelSerializer;
@@ -21,7 +22,20 @@ public class FullyConnected {
 	private MultiLayerNetwork model;
 	private int inputs, outputs;
 	
-	public FullyConnected(int inputs, int outputs, int[] hiddenLayers, double learningRate) {
+	public static enum OuputType {
+		SOFTMAX("softmax"), LINEAR("identity");
+		
+		private String value;
+		private OuputType(String value) {
+			this.value = value;
+		}
+		
+		public String getValue() {
+			return value;
+		}
+	}
+	
+	public FullyConnected(int inputs, int outputs, int[] hiddenLayers, double learningRate, OuputType outputType) {
 		this.inputs = inputs;
 		this.outputs = outputs;
 		MultiLayerConfiguration conf = null;
@@ -34,7 +48,7 @@ public class FullyConnected {
 	                .list()
 	                .layer(0, new OutputLayer.Builder(LossFunction.SQUARED_LOSS)
 	                        .weightInit(WeightInit.XAVIER)
-	                        .activation("softmax").weightInit(WeightInit.XAVIER)
+	                        .activation(outputType.value).weightInit(WeightInit.XAVIER)
 	                        .nIn(inputs).nOut(outputs).build())
 	                .pretrain(false).backprop(true).build();
 		} else {
@@ -56,7 +70,7 @@ public class FullyConnected {
 	        }
 	        conf =  builder.layer(hiddenLayers.length, new OutputLayer.Builder(LossFunction.SQUARED_LOSS)
 	                        .weightInit(WeightInit.XAVIER)
-	                        .activation("identity").weightInit(WeightInit.XAVIER)
+	                        .activation(outputType.value).weightInit(WeightInit.XAVIER)
 	                        .nIn(hiddenLayers[hiddenLayers.length - 1]).nOut(outputs).build())
 	                .pretrain(false).backprop(true).build();
 		}
@@ -71,50 +85,62 @@ public class FullyConnected {
 	 * @return
 	 */
 	public double[] predict(double[] input) {
-        INDArray inputVector = Nd4j.create(new int[] {1, inputs} );
-        for (int i = 0; i < inputs; i++) {
-        	inputVector.putScalar(i, input[i]);
-        }
+        INDArray inputVector = toINDArray(input);
         INDArray resultVector = model.output(inputVector);
+        double[] result = fromINDArrayVector(resultVector);
+		return result;
+	}
+		
+	public void train(double[] input, double[] output) {
+		INDArray inputVector = toINDArray(input);
+		INDArray outputVector = toINDArray(output);
+		model.fit(inputVector, outputVector);
+	}
+	
+	public void train(ArrayList<double[]> input, ArrayList<double[]> output) {
+		INDArray inputVector = toINDArray(input);
+		INDArray outputVector = toINDArray(output);
+		model.fit(inputVector, outputVector);
+	}
+	
+	private INDArray toINDArray(double [] array) {
+		INDArray vector = Nd4j.create(new int[] {1, array.length} );
+        for (int i = 0; i < array.length; i++) {
+        	vector.putScalar(i, array[i]);
+        }
+        return vector;
+	}
+	
+	private INDArray toINDArray(ArrayList<double[]> arrays) {
+		INDArray matrix = Nd4j.create(new int[] {arrays.size(), arrays.get(0).length} );
+        for (int i = 0; i < arrays.size(); i++) {
+        	for (int j=0; j<arrays.get(i).length ; j ++) {
+        		matrix.put(i, j, arrays.get(i)[j]);
+        	}
+        }
+        return matrix;
+	}
+	
+	public double[] fromINDArrayVector(INDArray indArray) {
         double[] result = new double[outputs];
 		for (int i = 0; i < outputs; i++) {
-			result[i] = resultVector.getDouble(i);
+			result[i] = indArray.getDouble(i);
 		}
 		return result;
 	}
 	
-	public void train(double[] input, double[] output) {
-		INDArray inputVector = null;
-		INDArray outputVector = null;
-		inputVector = Nd4j.create(new int[] {1, inputs} );
-        for (int i = 0; i < inputs; i++) {
-        	inputVector.putScalar(i, input[i]);
-        }
-        outputVector = Nd4j.create(new int[] {1, outputs} );
-        for (int i = 0; i < outputs; i++) {
-        	outputVector.putScalar(i, output[i]);
-        }
-		model.fit(inputVector, outputVector);
-		System.out.println(model.score());
-	}
-	
-	public void train(ArrayList<double[]> input, ArrayList<double[]> output) {
-		INDArray inputVector = null;
-		INDArray outputVector = null;
-		inputVector = Nd4j.create(new int[] {input.size(), inputs} );
-        for (int i = 0; i < input.size(); i++) {
-        	for (int j=0; j<input.get(i).length ; j ++) {
-        		inputVector.put(i, j, input.get(i)[j]);
-        	}
-        }
-        outputVector = Nd4j.create(new int[] {output.size(), outputs} );
-        for (int i = 0; i < output.size(); i++) {
-        	for (int j=0; j<output.get(i).length ; j ++) {
-        		outputVector.put(i, j, output.get(i)[j]);
-        	}
-        }
-		model.fit(inputVector, outputVector);
-	}
+    public Gradient gradient(double[] input, double[] labels) {
+        model.setInput(toINDArray(input));
+        model.setLabels(toINDArray(labels));
+        model.computeGradientAndScore();
+        return model.gradient();
+    }
+
+
+    public void applyGradient(Gradient gradient, int batchSize) {
+    	model.getUpdater().update(model, gradient, 1, batchSize);
+	    model.params().subi(gradient.gradient());
+    }
 	
 	public void saveModel(String path) throws IOException {
 		//Save the model

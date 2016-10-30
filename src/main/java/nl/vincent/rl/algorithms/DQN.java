@@ -10,6 +10,10 @@ import nl.vincent.rl.common.State;
 import nl.vincent.rl.envs.Environment;
 import nl.vincent.rl.networks.FullyConnected;
 
+/**
+ * Deep Q network (Dual)
+ * @author vincentbons
+ */
 public class DQN {
 	private int inputSize;
 	private int outputSize;
@@ -30,8 +34,8 @@ public class DQN {
 		if (currentEnvironment != null) {
 			this.inputSize = currentEnvironment.getStateSize();
 			this.outputSize = currentEnvironment.getActionSize();
-			qModel1 = new FullyConnected(inputSize, outputSize, hiddenLayers, learningRate);
-			qModel2 = new FullyConnected(inputSize, outputSize, hiddenLayers, learningRate);
+			qModel1 = new FullyConnected(inputSize, outputSize, hiddenLayers, learningRate, FullyConnected.OuputType.LINEAR);
+			qModel2 = new FullyConnected(inputSize, outputSize, hiddenLayers, learningRate, FullyConnected.OuputType.LINEAR);
 		}
 		this.memory = new ExperienceReplayMemory(builder.memorySize);
 		this.hiddenLayers = builder.hiddenLayers;
@@ -46,8 +50,8 @@ public class DQN {
 		this.currentEnvironment = env;
 		this.inputSize = env.getStateSize();
 		this.outputSize = env.getActionSize();
-		qModel1 = new FullyConnected(inputSize, outputSize, hiddenLayers, learningRate);
-		qModel2 = new FullyConnected(inputSize, outputSize, hiddenLayers, learningRate);
+		qModel1 = new FullyConnected(inputSize, outputSize, hiddenLayers, learningRate, FullyConnected.OuputType.LINEAR);
+		qModel2 = new FullyConnected(inputSize, outputSize, hiddenLayers, learningRate, FullyConnected.OuputType.LINEAR);
 	}
 	
 	public void run(int epochs, int steps) {
