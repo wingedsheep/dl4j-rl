@@ -36,9 +36,9 @@ public class App
  
     	
     	OneStepAC ac = new OneStepAC.Builder()
-    			.discountFactor(0.995)
-    			.alpha(1)
-    			.beta(1e-5)
+    			.discountFactor(0.999)
+    			.alpha(1e-3)
+    			.beta(1e-3)
     			.hiddenLayersPolicy(new int[] {30, 30, 30})
     			.hiddenLayersValue(new int[] {30, 30, 30})
     			.build();

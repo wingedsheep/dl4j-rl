@@ -138,7 +138,7 @@ public class FullyConnected {
 
 
     public void applyGradient(Gradient gradient, int batchSize) {
-    	model.getUpdater().update(model, gradient, 1, batchSize);
+//    	model.getUpdater().update(model, gradient, 1, batchSize);
 	    model.params().subi(gradient.gradient());
     }
 	

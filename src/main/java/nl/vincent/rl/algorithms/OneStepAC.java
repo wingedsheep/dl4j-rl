@@ -53,9 +53,15 @@ public class OneStepAC {
 				
 				double valuePredictionNewState = predictValue(obs.getState());
 				double valuePredictionOldState = predictValue(state);
-				double tdError = obs.getReward() + discountFactor * valuePredictionNewState - valuePredictionOldState;
-				double[] valueTarget = valueModel.predict(state.asList());
+				double tdError;
+				if (!obs.isFinal()) {
+					tdError = obs.getReward() + discountFactor * valuePredictionNewState - valuePredictionOldState;
+				} else {
+					tdError = obs.getReward() - valuePredictionOldState;
+				}
 				
+				double[] valueTarget = valueModel.predict(state.asList());
+								
 				// Zero because there is only one value for a state
 				valueTarget[0] += 1;
 				
@@ -63,11 +69,33 @@ public class OneStepAC {
 				valueGradient.gradient().muli(alpha * tdError);
 				valueModel.applyGradient(valueGradient, 1);
 
-				double[] policyTarget = new double[actionSize];
-				policyTarget[action] = tdError;
+				double[] policyTarget = policyModel.predict(state.asList());
+//				System.out.println("before: "+ policyTarget[action]);
+//				System.out.println("tderror: "+ tdError);
+//				double[] logPolicyTarget = new double[policyTarget.length];
+//				for (int i =0 ; i<policyTarget.length;i++) {
+//					logPolicyTarget[i] = Math.log(policyTarget[i]);
+//				}
+//				logPolicyTarget[action] += 1;
+//				for (int i =0 ; i<policyTarget.length;i++) {
+//					policyTarget[i] = Math.exp(logPolicyTarget[i]);
+//				}
+//				System.out.println("after: "+ policyTarget[action]);
+//				double[] policyTarget = new double[actionSize];
+//				policyTarget[action] = tdError;
+				double actionProbability = policyTarget[action];
+//				System.out.println("prob before: "+actionProbability);
+				policyTarget[action] += 1;
 				Gradient policyGradient = policyModel.gradient(state.asList(), policyTarget);
-				policyGradient.gradient().muli(alpha * Math.pow(discountFactor, step));
+				policyGradient.gradient().divi(actionProbability);
+				policyGradient.gradient().muli(alpha * Math.pow(discountFactor, step) * tdError );
 				policyModel.applyGradient(policyGradient, 1);
+				
+				policyTarget = policyModel.predict(state.asList());
+				actionProbability = policyTarget[action];
+//				System.out.println("tderror: "+ tdError);
+//				System.out.println("prob after: "+actionProbability);
+				
 				
 				state = new State(obs.getState());
 				
