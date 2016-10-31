@@ -1,7 +1,7 @@
 package nl.vincent.rl;
 
 import nl.vincent.rl.algorithms.OneStepAC;
-import nl.vincent.rl.envs.GridWorld;
+import nl.vincent.rl.envs.minesweeper.minesweeper.MineSweeperEnv;
 
 /**
  * Hello world!
@@ -43,7 +43,7 @@ public class App
     			.hiddenLayersValue(new int[] {30, 30, 30})
     			.build();
 
-    	ac.run(new GridWorld(), 10000, 200);
-//    	ac.run(new MineSweeperEnv(5, MineSweeperEnv.TOUGHNESS_EASY), 10000, 1000);
+//    	ac.run(new GridWorld(), 10000, 200);
+    	ac.run(new MineSweeperEnv(10, MineSweeperEnv.TOUGHNESS_EASY), 100000, 1000);
     }
 }

@@ -46,12 +46,12 @@ public class MineSweeperEnv extends Environment {
 		Observation obs = new Observation(state, reward, mineSweeperGame.isFinished());
 		if (mineSweeperGame.isFinished()) {
 			System.out.println("revealed: "+mineSweeperGame.getNoRevealed());
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+//			try {
+//				Thread.sleep(1000);
+//			} catch (InterruptedException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
 			mineSweeperGame.setVisible(false); //you can't see me!
 			mineSweeperGame.dispose(); //Destroy the JFrame object
 		}
