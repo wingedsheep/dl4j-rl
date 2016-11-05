@@ -39,18 +39,28 @@ public class MineSweeperEnv extends Environment {
 	@Override
 	public Observation step(int action) {
 		// size = 
-		int actionY = action / boardSize;
-		int actionX = action - (actionY * boardSize);
+		int actionX = action / boardSize;
+		int actionY = action - (actionX * boardSize);
 		double reward = mineSweeperGame.buttonClicked(actionX, actionY);
 		State state = getStateFromMineSweeperGame();
 		Observation obs = new Observation(state, reward, mineSweeperGame.isFinished());
-		if (mineSweeperGame.isFinished()) {
-			System.out.println("revealed: "+mineSweeperGame.getNoRevealed());
+//		if (mineSweeperGame.getNoRevealed() >= 80) {
 //			try {
-//				Thread.sleep(1000);
+//				Thread.sleep(500);
 //			} catch (InterruptedException e) {
 //				// TODO Auto-generated catch block
 //				e.printStackTrace();
+//			}
+//		}
+		if (mineSweeperGame.isFinished()) {
+			System.out.println("revealed: "+mineSweeperGame.getNoRevealed());
+//			if (reward >= 0) {
+//				try {
+//					Thread.sleep(1000);
+//				} catch (InterruptedException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				}
 //			}
 			mineSweeperGame.setVisible(false); //you can't see me!
 			mineSweeperGame.dispose(); //Destroy the JFrame object
@@ -69,6 +79,21 @@ public class MineSweeperEnv extends Environment {
         	}
     	}
 		return new State(state);
+	}
+	
+	public int[] getAvailableActions() {
+		State state = getStateFromMineSweeperGame();
+		int[] availableActions = new int[actions];
+		int index = 0;
+		for (double d : state.asList()) {
+			if (d > -1) {
+				availableActions[index] = 0;
+			} else {
+				availableActions[index] = 1;
+			}
+			index++;
+		}
+		return availableActions;
 	}
 
 }

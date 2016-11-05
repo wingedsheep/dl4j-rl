@@ -18,7 +18,7 @@ import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.lossfunctions.LossFunctions.LossFunction;
 
-public class FullyConnected {
+public class Convolutional {
 	private MultiLayerNetwork model;
 	private int inputs, outputs;
 	
@@ -35,7 +35,7 @@ public class FullyConnected {
 		}
 	}
 	
-	public FullyConnected(int inputs, int outputs, int[] hiddenLayers, double learningRate, OuputType outputType) {
+	public Convolutional(int inputs, int outputs, int[] hiddenLayers, double learningRate, OuputType outputType) {
 		this.inputs = inputs;
 		this.outputs = outputs;
 		MultiLayerConfiguration conf = null;

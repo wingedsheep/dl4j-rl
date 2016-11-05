@@ -70,32 +70,16 @@ public class OneStepAC {
 				valueModel.applyGradient(valueGradient, 1);
 
 				double[] policyTarget = policyModel.predict(state.asList());
-//				System.out.println("before: "+ policyTarget[action]);
-//				System.out.println("tderror: "+ tdError);
-//				double[] logPolicyTarget = new double[policyTarget.length];
-//				for (int i =0 ; i<policyTarget.length;i++) {
-//					logPolicyTarget[i] = Math.log(policyTarget[i]);
-//				}
-//				logPolicyTarget[action] += 1;
-//				for (int i =0 ; i<policyTarget.length;i++) {
-//					policyTarget[i] = Math.exp(logPolicyTarget[i]);
-//				}
-//				System.out.println("after: "+ policyTarget[action]);
-//				double[] policyTarget = new double[actionSize];
-//				policyTarget[action] = tdError;
 				double actionProbability = policyTarget[action];
-//				System.out.println("prob before: "+actionProbability);
 				policyTarget[action] += 1;
 				Gradient policyGradient = policyModel.gradient(state.asList(), policyTarget);
 				policyGradient.gradient().divi(actionProbability);
 				policyGradient.gradient().muli(alpha * Math.pow(discountFactor, step) * tdError );
 				policyModel.applyGradient(policyGradient, 1);
 				
-				policyTarget = policyModel.predict(state.asList());
-				actionProbability = policyTarget[action];
-//				System.out.println("tderror: "+ tdError);
-//				System.out.println("prob after: "+actionProbability);
-				
+				if (isNaN(policyModel.predict(state.asList())[action])) {
+					System.out.println("NaN output");
+				}
 				
 				state = new State(obs.getState());
 				
@@ -108,12 +92,27 @@ public class OneStepAC {
 		}
 	}
 	
+	boolean isNaN(double x){return x != x;}
+	
 	private double predictValue(State state) {
 		return valueModel.predict(state.asList())[0];
 	}
 	
 	private int selectAction(State state) {
 		double[] policyOutput = policyModel.predict(state.asList());
+		int[] availableActions =  currentEnvironment.getAvailableActions();
+		
+		// Multiply selection probability by zero if action is not available.
+		double probSum = 0;
+		for (int i = 0; i < policyOutput.length; i ++) {
+			policyOutput[i] *= availableActions[i];
+			probSum += policyOutput[i];
+		}
+		// Divide by probsum
+		for (int i = 0; i < policyOutput.length; i ++) {
+			policyOutput[i] /= probSum;
+		}
+		
 		double random = rng.nextDouble();
 		double cumulativeProbability = 0.0;
 		

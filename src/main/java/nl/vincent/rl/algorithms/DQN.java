@@ -1,11 +1,13 @@
 package nl.vincent.rl.algorithms;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Random;
 
 import nl.vincent.rl.common.ExperienceReplayMemory;
 import nl.vincent.rl.common.ExperienceReplayMemory.MemoryEntry;
 import nl.vincent.rl.common.Observation;
+import nl.vincent.rl.common.ScoreAverageCounter;
 import nl.vincent.rl.common.State;
 import nl.vincent.rl.envs.Environment;
 import nl.vincent.rl.networks.FullyConnected;
@@ -31,15 +33,12 @@ public class DQN {
 	
 	public DQN(DQNBuilder builder) {
 		this.currentEnvironment = builder.environment;
-		if (currentEnvironment != null) {
-			this.inputSize = currentEnvironment.getStateSize();
-			this.outputSize = currentEnvironment.getActionSize();
-			qModel1 = new FullyConnected(inputSize, outputSize, hiddenLayers, learningRate, FullyConnected.OuputType.LINEAR);
-			qModel2 = new FullyConnected(inputSize, outputSize, hiddenLayers, learningRate, FullyConnected.OuputType.LINEAR);
-		}
-		this.memory = new ExperienceReplayMemory(builder.memorySize);
 		this.hiddenLayers = builder.hiddenLayers;
 		this.learningRate = builder.learningRate;
+		if (currentEnvironment != null) {
+			initEnvironment(currentEnvironment);
+		}
+		this.memory = new ExperienceReplayMemory(builder.memorySize);
 		this.discountFactor = builder.discountFactor;
 		this.miniBatchSize = builder.miniBatchSize;
 		this.startingExplorationRate = builder.startingExplorationRate;
@@ -57,6 +56,7 @@ public class DQN {
 	public void run(int epochs, int steps) {
 		Environment env = currentEnvironment;
 		double explorationRate = this.startingExplorationRate;
+		ScoreAverageCounter scoreCounter = new ScoreAverageCounter(100);
 		for (int epoch = 0; epoch < epochs; epoch ++) {
 			State state = env.reset();
 			
@@ -92,7 +92,10 @@ public class DQN {
 		    	
 		    	if (obs.isFinal()) break;
 		    }
-		    System.out.println("Epoch "+epoch+" reward "+totalReward+" steps "+totalSteps);
+		    
+		    scoreCounter.addScore(totalReward);
+		    
+		    System.out.println("Epoch "+epoch+" reward "+totalReward+" steps "+totalSteps+" Average last 100 "+scoreCounter.getAverage());
 		    explorationRate *= this.explorationRateDecay;
 		}
 	}
@@ -141,12 +144,25 @@ public class DQN {
 	}
 	
 	private int selectAction(double[] qValues, double explorationRate) {
+		int[] availableActions =  currentEnvironment.getAvailableActions();
+		
+		double[] actionPickingQValues = qValues.clone();
+		// Multiply selection probability by zero if action is not available.
+		for (int i = 0; i < actionPickingQValues.length; i ++) {
+			if(availableActions[i] == 0) {
+				actionPickingQValues[i] = -1000;
+			}
+		}
+		
 		double random = randomGen.nextDouble();
 		if (random < explorationRate) {
 			int action = randomGen.nextInt(outputSize);
+			while (availableActions[action] == 0) {
+				action = randomGen.nextInt(outputSize);
+			}
 			return action;
 		} else {
-			int action = findMaxQIndex(qValues);
+			int action = findMaxQIndex(actionPickingQValues);
 			return action;
 		}
 	}
@@ -173,6 +189,14 @@ public class DQN {
 		    }
 		}
 		return max;
+	}
+	
+	public void loadModel1(String fileName) throws IOException {
+		qModel1.loadModel(fileName);
+	}
+	
+	public void loadModel2(String fileName) throws IOException {
+		qModel2.loadModel(fileName);
 	}
 
 	public static class DQNBuilder {

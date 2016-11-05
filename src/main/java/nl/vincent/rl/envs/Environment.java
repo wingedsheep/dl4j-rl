@@ -22,4 +22,11 @@ public abstract class Environment {
 	public int getActionSize() {
 		return this.actions;
 	}
+	public int[] getAvailableActions() {
+		int[] availableActions = new int[actions];
+		for (int i=0;i<availableActions.length;i++) {
+			availableActions[i] = 1;
+		}
+		return availableActions;
+	}
 }

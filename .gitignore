@@ -1,2 +1,4 @@
 /target/
 /.settings/
+/results/
+.DS_Store
