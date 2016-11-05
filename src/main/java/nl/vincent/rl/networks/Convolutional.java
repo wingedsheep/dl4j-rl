@@ -8,6 +8,8 @@ import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.Updater;
+import org.deeplearning4j.nn.conf.inputs.InputType;
+import org.deeplearning4j.nn.conf.layers.ConvolutionLayer;
 import org.deeplearning4j.nn.conf.layers.DenseLayer;
 import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.deeplearning4j.nn.gradient.Gradient;
@@ -21,6 +23,7 @@ import org.nd4j.linalg.lossfunctions.LossFunctions.LossFunction;
 public class Convolutional {
 	private MultiLayerNetwork model;
 	private int inputs, outputs;
+	private int width, height, depth;
 	
 	public static enum OuputType {
 		SOFTMAX("softmax"), LINEAR("identity");
@@ -35,8 +38,10 @@ public class Convolutional {
 		}
 	}
 	
-	public Convolutional(int inputs, int outputs, int[] hiddenLayers, double learningRate, OuputType outputType) {
-		this.inputs = inputs;
+	public Convolutional(int width, int height, int depth, int outputs, int[] hiddenLayers, int denseLayerSize, int[] filterSizes, int[] strides, double learningRate, OuputType outputType) {
+		this.width = width;
+		this.height = height;
+		this.depth = depth;
 		this.outputs = outputs;
 		MultiLayerConfiguration conf = null;
 		if (hiddenLayers.length == 0) {
@@ -50,7 +55,9 @@ public class Convolutional {
 	                        .weightInit(WeightInit.XAVIER)
 	                        .activation(outputType.value).weightInit(WeightInit.XAVIER)
 	                        .nIn(inputs).nOut(outputs).build())
-	                .pretrain(false).build();
+	                .pretrain(false)
+	                .setInputType(InputType.convolutionalFlat(width, height, depth))
+	                .build();
 		} else {
 			NeuralNetConfiguration.ListBuilder builder = new NeuralNetConfiguration.Builder()
 	                .iterations(1)
@@ -58,21 +65,35 @@ public class Convolutional {
 	                .learningRate(learningRate)
 	                .updater(Updater.RMSPROP)
 	                .list()
-	                .layer(0, new DenseLayer.Builder().nIn(inputs).nOut(hiddenLayers[0])
+	                .layer(0, new ConvolutionLayer.Builder(filterSizes[0], filterSizes[0])
+	                		.nIn(1)
+	                		.nOut(hiddenLayers[0])
+	                		.stride(strides[0], strides[0])
 	                        .weightInit(WeightInit.XAVIER)
 	                        .activation("relu")
 	                        .build());
-	        for (int i = 0 ; i < hiddenLayers.length - 1 ; i++) {
-	        	builder.layer(i+1, new DenseLayer.Builder().nIn(hiddenLayers[i]).nOut(hiddenLayers[i+1])
+	        for (int i = 1 ; i < hiddenLayers.length ; i++) {
+	        	builder.layer(i, new ConvolutionLayer.Builder(filterSizes[i], filterSizes[i])
+	        			.nOut(hiddenLayers[i])
+	        			.stride(strides[i], strides[i])
                         .weightInit(WeightInit.XAVIER)
                         .activation("relu")
                         .build());
 	        }
-	        conf =  builder.layer(hiddenLayers.length, new OutputLayer.Builder(LossFunction.SQUARED_LOSS)
+	        conf =  builder
+	        		.layer(hiddenLayers.length, new DenseLayer.Builder()
 	                        .weightInit(WeightInit.XAVIER)
-	                        .activation(outputType.value).weightInit(WeightInit.XAVIER)
-	                        .nIn(hiddenLayers[hiddenLayers.length - 1]).nOut(outputs).build())
-	                .pretrain(false).build();
+	                        .activation("relu")
+	                        .nOut(denseLayerSize)
+	                        .build())
+	        		.layer(hiddenLayers.length, new OutputLayer.Builder(LossFunction.SQUARED_LOSS)
+	                        .weightInit(WeightInit.XAVIER)
+	                        .activation(outputType.value)
+	                        .nOut(outputs)
+	                        .build())
+	        		.setInputType(InputType.convolutionalFlat(width, height, depth))
+	                .pretrain(false)
+	                .build();
 		}
         MultiLayerNetwork model = new MultiLayerNetwork(conf);
         model.init();
