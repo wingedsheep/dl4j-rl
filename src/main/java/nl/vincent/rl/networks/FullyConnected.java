@@ -50,7 +50,7 @@ public class FullyConnected {
 	                        .weightInit(WeightInit.XAVIER)
 	                        .activation(outputType.value).weightInit(WeightInit.XAVIER)
 	                        .nIn(inputs).nOut(outputs).build())
-	                .pretrain(false).build();
+	                .pretrain(false).backprop(true).build();
 		} else {
 			NeuralNetConfiguration.ListBuilder builder = new NeuralNetConfiguration.Builder()
 	                .iterations(1)
@@ -72,7 +72,7 @@ public class FullyConnected {
 	                        .weightInit(WeightInit.XAVIER)
 	                        .activation(outputType.value).weightInit(WeightInit.XAVIER)
 	                        .nIn(hiddenLayers[hiddenLayers.length - 1]).nOut(outputs).build())
-	                .pretrain(false).build();
+	                .pretrain(false).backprop(true).build();
 		}
         MultiLayerNetwork model = new MultiLayerNetwork(conf);
         model.init();

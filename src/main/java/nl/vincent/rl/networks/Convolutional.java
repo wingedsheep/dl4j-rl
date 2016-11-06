@@ -57,6 +57,7 @@ public class Convolutional {
 	                        .nIn(inputs).nOut(outputs).build())
 	                .pretrain(false)
 	                .setInputType(InputType.convolutionalFlat(width, height, depth))
+	                .backprop(true)
 	                .build();
 		} else {
 			NeuralNetConfiguration.ListBuilder builder = new NeuralNetConfiguration.Builder()
@@ -93,6 +94,7 @@ public class Convolutional {
 	                        .build())
 	        		.setInputType(InputType.convolutionalFlat(width, height, depth))
 	                .pretrain(false)
+	                .backprop(true)
 	                .build();
 		}
         MultiLayerNetwork model = new MultiLayerNetwork(conf);
