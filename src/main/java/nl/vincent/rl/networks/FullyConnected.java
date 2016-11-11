@@ -44,9 +44,11 @@ public class FullyConnected {
 	                .iterations(1)
 	                .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
 	                .learningRate(learningRate)
+                    .biasLearningRate(learningRate)
+                    .biasInit(0)
 	                .updater(Updater.RMSPROP)
 	                .list()
-	                .layer(0, new OutputLayer.Builder(LossFunction.SQUARED_LOSS)
+	                .layer(0, new OutputLayer.Builder(LossFunction.MSE)
 	                        .weightInit(WeightInit.XAVIER)
 	                        .activation(outputType.value).weightInit(WeightInit.XAVIER)
 	                        .nIn(inputs).nOut(outputs).build())
@@ -56,6 +58,8 @@ public class FullyConnected {
 	                .iterations(1)
 	                .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
 	                .learningRate(learningRate)
+                    .biasLearningRate(learningRate)
+                    .biasInit(0)
 	                .updater(Updater.RMSPROP)
 	                .list()
 	                .layer(0, new DenseLayer.Builder().nIn(inputs).nOut(hiddenLayers[0])
@@ -68,7 +72,7 @@ public class FullyConnected {
                         .activation("relu")
                         .build());
 	        }
-	        conf =  builder.layer(hiddenLayers.length, new OutputLayer.Builder(LossFunction.SQUARED_LOSS)
+	        conf =  builder.layer(hiddenLayers.length, new OutputLayer.Builder(LossFunction.MSE)
 	                        .weightInit(WeightInit.XAVIER)
 	                        .activation(outputType.value).weightInit(WeightInit.XAVIER)
 	                        .nIn(hiddenLayers[hiddenLayers.length - 1]).nOut(outputs).build())
@@ -141,7 +145,7 @@ public class FullyConnected {
     }
 
     public void applyGradient(Gradient gradient, int batchSize) {
-    	model.getUpdater().update(model, gradient, 1, batchSize);
+//    	model.getUpdater().update(model, gradient, 1, batchSize);
 	    model.params().subi(gradient.gradient());
     }
 	

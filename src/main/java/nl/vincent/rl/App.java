@@ -1,6 +1,6 @@
 package nl.vincent.rl;
 
-import nl.vincent.rl.algorithms.DQN;
+import nl.vincent.rl.algorithms.DQNConv;
 import nl.vincent.rl.envs.minesweeper.minesweeper.MineSweeperEnv;
 
 /**
@@ -17,36 +17,37 @@ public class App
 //    			.hiddenLayers(new int[] {30, 30, 30})
 //    			.memorySize(100000)
 //    			.miniBatchSize(32)
-//    			.learningRate(0.01)
+//    			.learningRate(0.001)
 //    			.startingExplorationRate(1.0).build();
 //    	
 //    	dqn.run(new GridWorld(), 10000, 200);
     	
-    	DQN dqn = new DQN.DQNBuilder()
-    			.discountFactor(0.995)
-    			.explorationRateDecay(0.995)
-    			.hiddenLayers(new int[] {250, 250, 250, 250, 250})
-    			.memorySize(1000000)
-    			.miniBatchSize(64)
-    			.learningRate(0.0001)
-    			.environment(new MineSweeperEnv(10, MineSweeperEnv.TOUGHNESS_EASY))
-    			.startingExplorationRate(1.0).build();
-    	
-//    	DQNConv dqn = new DQNConv.DQNBuilder()
+//    	DQN dqn = new DQN.DQNBuilder()
 //    			.discountFactor(0.995)
 //    			.explorationRateDecay(0.995)
-//    			.setWidth(10)
-//    			.setHeight(10)
-//    			.setDepth(1)
-//    			.hiddenLayers(new int[] {20, 20})
-//    			.setFilterSizes(new int[] {4, 3, 3})
-//    			.setStrides(new int[] {2, 1, 1})
-//    			.setDenseLayerSize(150)
+//    			.hiddenLayers(new int[] {250, 250, 250, 250, 250})
 //    			.memorySize(1000000)
 //    			.miniBatchSize(64)
-//    			.learningRate(0.001)
+//    			.learningRate(0.0001)
 //    			.environment(new MineSweeperEnv(10, MineSweeperEnv.TOUGHNESS_EASY))
 //    			.startingExplorationRate(1.0).build();
+    	
+    	DQNConv dqn = new DQNConv.DQNBuilder()
+    			.discountFactor(0.995)
+    			.explorationRateDecay(0.995)
+    			.setWidth(10)
+    			.setHeight(10)
+    			.setDepth(1)
+    			.hiddenLayers(new int[] {60})
+    			.setFilterSizes(new int[] {3})
+    			.setStrides(new int[] {1})
+    			.setPaddings(new int[][] {new int[]{2, 2}})
+    			.setFullyConnectedLayers(new int[] {})
+    			.memorySize(1000000)
+    			.miniBatchSize(32)
+    			.learningRate(0.001)
+    			.environment(new MineSweeperEnv(10, MineSweeperEnv.TOUGHNESS_EASY))
+    			.startingExplorationRate(1.0).build();
     	
 //    	try {
 //			dqn.loadModel1("qModel1_9000.zip");
@@ -62,12 +63,12 @@ public class App
     	
 //    	OneStepAC ac = new OneStepAC.Builder()
 //    			.discountFactor(0.999)
-//    			.alpha(1e-3)
-//    			.beta(1e-3)
+//    			.alpha(1e-4)
+//    			.beta(1e-4)
 //    			.hiddenLayersPolicy(new int[] {30, 30, 30})
 //    			.hiddenLayersValue(new int[] {30, 30, 30})
 //    			.build();
-
+//
 //    	ac.run(new GridWorld(), 10000, 200);
 //    	ac.run(new MineSweeperEnv(10, MineSweeperEnv.TOUGHNESS_EASY), 100000, 1000);
     }

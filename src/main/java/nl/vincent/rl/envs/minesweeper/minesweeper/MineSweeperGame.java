@@ -243,7 +243,8 @@ public class MineSweeperGame extends JFrame {
 				if (!isReveiled) {
 					value = -1;
 				} else {
-					value = mineLand[i][j];
+					// We add +1, because values that are not in the playing area would have value 0
+					value = mineLand[i][j] + 1;
 				}
 				observation[i][j] = value;
 			}
@@ -278,7 +279,8 @@ public class MineSweeperGame extends JFrame {
 
 //				System.exit(0);
 				isFinished = true;
-				return (int) - Math.pow(mineLand.length, 2) + this.noOfMines;
+//				return (int) - Math.pow(mineLand.length, 2) + this.noOfMines;
+				return -1;
 			case 0:
 				buttons[x][y].setBackground(Color.lightGray);
 				++this.noOfRevealed;
@@ -322,10 +324,10 @@ public class MineSweeperGame extends JFrame {
 		// Small penalty for clicking an already revealed state
 		int noRevealedAfter = noOfRevealed;
 		int discovered = noRevealedAfter - noRevealedBefore;
-		if (discovered == 0) {
-			return -1;
+		if (isFinished) {
+			return 1;
 		} else {
-			return discovered;
+			return 0;
 		}
 	}
 

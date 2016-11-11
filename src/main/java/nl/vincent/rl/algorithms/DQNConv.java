@@ -29,12 +29,13 @@ public class DQNConv {
 	private int[] hiddenLayers;
 	private int[] filterSizes = new int[] {8, 4, 3};
 	private int[] strides = new int[] {2, 1, 1};
+	private int[][] paddings;
 	private int width, height, depth;
-	private int denseLayerSize;
 	private double startingExplorationRate;
 	private double explorationRateDecay;
 	private double learningRate;
 	private Environment currentEnvironment;
+	private int[] fullyConnectedLayers;
 	
 	public DQNConv(DQNBuilder builder) {
 		this.currentEnvironment = builder.environment;
@@ -42,9 +43,11 @@ public class DQNConv {
 		this.learningRate = builder.learningRate;
 		this.filterSizes = builder.filterSizes;
 		this.strides = builder.strides;
+		this.paddings = builder.paddings;
 		this.width = builder.width;
 		this.height = builder.height;
 		this.depth = builder.depth;
+		this.fullyConnectedLayers = builder.fullyConnectedLayers;
 		if (currentEnvironment != null) {
 			initEnvironment(currentEnvironment);
 		}
@@ -59,8 +62,8 @@ public class DQNConv {
 		this.currentEnvironment = env;
 		this.inputSize = env.getStateSize();
 		this.outputSize = env.getActionSize();
-		qModel1 = new Convolutional(width, height, depth, outputSize, hiddenLayers, denseLayerSize, filterSizes, strides, learningRate, OuputType.LINEAR);
-		qModel2 = new Convolutional(width, height, depth, outputSize, hiddenLayers, denseLayerSize, filterSizes, strides, learningRate, OuputType.LINEAR);
+		qModel1 = new Convolutional(width, height, depth, outputSize, hiddenLayers, fullyConnectedLayers, filterSizes, strides, paddings, learningRate, OuputType.LINEAR);
+		qModel2 = new Convolutional(width, height, depth, outputSize, hiddenLayers, fullyConnectedLayers, filterSizes, strides, paddings, learningRate, OuputType.LINEAR);
 	}
 	
 	public void run(int epochs, int steps) {
@@ -214,8 +217,9 @@ public class DQNConv {
 		private int[] hiddenLayers = new int[] {30, 30};
 		private int[] filterSizes = new int[] {8, 4, 3};
 		private int[] strides = new int[] {2, 1, 1};
+		private int[][] paddings = new int[][] {};
 		private int width, height, depth;
-		private int denseLayerSize;
+		private int[] fullyConnectedLayers;
 		private double discountFactor = 0.995;
 		private double learningRate = 0.001;
 		private Environment environment = null;
@@ -243,6 +247,11 @@ public class DQNConv {
 			return this;
 		}
 		
+		public DQNBuilder setPaddings(int[][] is) {
+			this.paddings = is;
+			return this;
+		}
+		
 		public DQNBuilder setWidth(int width) {
 			this.width = width;
 			return this;
@@ -258,8 +267,8 @@ public class DQNConv {
 			return this;
 		}
 		
-		public DQNBuilder setDenseLayerSize(int denseLayerSize) {
-			this.denseLayerSize = denseLayerSize;
+		public DQNBuilder setFullyConnectedLayers(int[] fullyConnectedLayers) {
+			this.fullyConnectedLayers = fullyConnectedLayers;
 			return this;
 		}
 		

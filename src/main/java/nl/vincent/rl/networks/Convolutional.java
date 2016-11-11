@@ -38,7 +38,7 @@ public class Convolutional {
 		}
 	}
 	
-	public Convolutional(int width, int height, int depth, int outputs, int[] hiddenLayers, int denseLayerSize, int[] filterSizes, int[] strides, double learningRate, OuputType outputType) {
+	public Convolutional(int width, int height, int depth, int outputs, int[] hiddenLayers, int[] fullyConnectedLayers, int[] filterSizes, int[] strides, int[][] paddings, double learningRate, OuputType outputType) {
 		this.width = width;
 		this.height = height;
 		this.depth = depth;
@@ -49,9 +49,11 @@ public class Convolutional {
 	                .iterations(1)
 	                .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
 	                .learningRate(learningRate)
+                    .biasLearningRate(learningRate)
+                    .biasInit(0)
 	                .updater(Updater.RMSPROP)
 	                .list()
-	                .layer(0, new OutputLayer.Builder(LossFunction.SQUARED_LOSS)
+	                .layer(0, new OutputLayer.Builder(LossFunction.MSE)
 	                        .weightInit(WeightInit.XAVIER)
 	                        .activation(outputType.value).weightInit(WeightInit.XAVIER)
 	                        .nIn(inputs).nOut(outputs).build())
@@ -64,12 +66,15 @@ public class Convolutional {
 	                .iterations(1)
 	                .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
 	                .learningRate(learningRate)
+                    .biasLearningRate(learningRate)
+                    .biasInit(0)
 	                .updater(Updater.RMSPROP)
 	                .list()
 	                .layer(0, new ConvolutionLayer.Builder(filterSizes[0], filterSizes[0])
 	                		.nIn(1)
 	                		.nOut(hiddenLayers[0])
 	                		.stride(strides[0], strides[0])
+	                		.padding(paddings[0])
 	                        .weightInit(WeightInit.XAVIER)
 	                        .activation("relu")
 	                        .build());
@@ -77,17 +82,21 @@ public class Convolutional {
 	        	builder.layer(i, new ConvolutionLayer.Builder(filterSizes[i], filterSizes[i])
 	        			.nOut(hiddenLayers[i])
 	        			.stride(strides[i], strides[i])
+	        			.padding(paddings[i])
                         .weightInit(WeightInit.XAVIER)
                         .activation("relu")
                         .build());
 	        }
+	        for (int i = 0 ; i < fullyConnectedLayers.length ; i++) {
+	        	builder.layer(hiddenLayers.length + i, new DenseLayer.Builder()
+                        .weightInit(WeightInit.XAVIER)
+                        .activation("relu")
+                        .nOut(fullyConnectedLayers[i])
+                        .build());
+	        }
 	        conf =  builder
-	        		.layer(hiddenLayers.length, new DenseLayer.Builder()
-	                        .weightInit(WeightInit.XAVIER)
-	                        .activation("relu")
-	                        .nOut(denseLayerSize)
-	                        .build())
-	        		.layer(hiddenLayers.length, new OutputLayer.Builder(LossFunction.SQUARED_LOSS)
+	        		
+	        		.layer(hiddenLayers.length + fullyConnectedLayers.length, new OutputLayer.Builder(LossFunction.MSE)
 	                        .weightInit(WeightInit.XAVIER)
 	                        .activation(outputType.value)
 	                        .nOut(outputs)
