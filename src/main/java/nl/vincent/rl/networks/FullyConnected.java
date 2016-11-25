@@ -35,6 +35,8 @@ public class FullyConnected {
 		}
 	}
 	
+	public FullyConnected(){};
+	
 	public FullyConnected(int inputs, int outputs, int[] hiddenLayers, double learningRate, OuputType outputType) {
 		this.inputs = inputs;
 		this.outputs = outputs;
@@ -88,7 +90,7 @@ public class FullyConnected {
 	 * @param input
 	 * @return
 	 */
-	public double[] predict(double[] input) {
+	public synchronized double[] predict(double[] input) {
         INDArray inputVector = toINDArray(input);
         INDArray resultVector = model.output(inputVector);
         double[] result = fromINDArrayVector(resultVector);
@@ -133,7 +135,7 @@ public class FullyConnected {
 		return result;
 	}
 	
-    public Gradient gradient(double[] input, double[] labels) {
+    public synchronized Gradient gradient(double[] input, double[] labels) {
         model.setInput(toINDArray(input));
         model.setLabels(toINDArray(labels));
         model.computeGradientAndScore();
@@ -145,8 +147,12 @@ public class FullyConnected {
     }
 
     public void applyGradient(Gradient gradient, int batchSize) {
-//    	model.getUpdater().update(model, gradient, 1, batchSize);
+//    	model.getUpdater().update(model, gradient, 1, 20);
 	    model.params().subi(gradient.gradient());
+    }
+    
+    public void applyGradient(INDArray gradient) {
+	    model.params().subi(gradient);
     }
 	
 	public void saveModel(String path) throws IOException {
@@ -154,5 +160,18 @@ public class FullyConnected {
 	    File locationToSave = new File(path);      //Where to save the network. Note: the file is in .zip format - can be opened externally
 	    boolean saveUpdater = true;                                     //Updater: i.e., the state for Momentum, RMSProp, Adagrad etc. Save this if you want to train your network more in the future
 	    ModelSerializer.writeModel(this.model, locationToSave, saveUpdater);
+	}
+	
+	public MultiLayerNetwork getModel() {
+		return model;
+	}
+	
+	public FullyConnected clone() {
+		MultiLayerNetwork newModel = model.clone();
+		FullyConnected clone = new FullyConnected();
+		clone.model = newModel;
+		clone.inputs = this.inputs;
+		clone.outputs = this.outputs;
+		return clone;
 	}
 }
